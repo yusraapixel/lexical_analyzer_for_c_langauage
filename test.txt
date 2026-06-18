@@ -1,0 +1,129 @@
+#include <stdio.h>
+#define MAX 100
+#define SIZE 10
+
+int main() {
+
+    /* =========================
+       IDENTIFIERS
+       ========================= */
+    int count;
+    int _temp;
+    int var123;
+    int __hidden;
+    int veryVeryVeryVeryVeryLongIdentifierName;
+
+    /* =========================
+       KEYWORDS
+       ========================= */
+    int x;
+    float y;
+    char ch;
+    double d;
+    return 0;
+
+    /* Keywords inside identifiers */
+    int intVar;
+    int floatValue;
+    int returnCode;
+
+    /* =========================
+       INTEGER CONSTANTS
+       ========================= */
+    int a = 0;
+    int b = 123;
+    int c = 99999;
+    int d1 = 000123;
+    int d2 = 2147483647;
+    int d3 = 2147483648;      // overflow test
+
+    /* =========================
+       OPERATORS
+       ========================= */
+    a = b + c;
+    a = b - c;
+    a = b * c;
+    a = b / c;
+
+    a++;
+    b--;
+    a += 5;
+    b -= 2;
+    c *= 3;
+    c /= 4;
+
+    if (a == b) {}
+    if (a != b) {}
+    if (a >= b) {}
+    if (a <= b) {}
+    if (a > b) {}
+    if (a < b) {}
+
+    if (a && b) {}
+    if (a || b) {}
+
+    /* Longest Match Tests */
+    a+++b;
+    a----b;
+    a>=b;
+    a<=b;
+    a==b;
+    a!=b;
+
+    /* =========================
+       STRING LITERALS
+       ========================= */
+    printf("Hello World");
+    printf("");
+    printf("Line1\nLine2");
+    printf("Tab\tCharacter");
+    printf("\"Quoted Text\"");
+    printf("\\Backslash");
+
+    /* =========================
+       PUNCTUATION
+       ========================= */
+    (a);
+    { }
+    [0];
+    a,b;
+    ;
+
+    /* =========================
+       COMMENTS
+       ========================= */
+
+    // Single line comment
+
+    /*
+       Multi line comment
+       Testing lexer
+    */
+
+    /* =========================
+       MIXED TOKENS
+       ========================= */
+    int countValue = 100;
+
+    /* =========================
+       INVALID CASES
+       (Lexer should report errors)
+       ========================= */
+
+    int invalid@name = 5;
+
+    $
+    `
+    ~
+
+    123abc
+
+    /* Unterminated string literal test
+    printf("This string never ends);
+
+    */
+
+    /* Unterminated comment test
+
+    return 0;
+}
