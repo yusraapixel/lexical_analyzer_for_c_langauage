@@ -67,4 +67,4 @@ pip install streamlit pandas
 
 ## License
 
-This project is submitted as an academic project. All rights reserved by the authors.
+This project is submitted as an academic project. All rights reserved by the author.
