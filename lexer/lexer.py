@@ -1,22 +1,13 @@
-"""
-C Language Lexical Analyzer - Core Engine
-==========================================
-Implements:
-  - Tokenization of C source code (DFA-driven, regex-backed transition rules)
-  - Symbol Table construction & management
-  - Lexical Error Detection with meaningful messages
 
-This module is GUI-agnostic. The Streamlit app (app.py) imports and drives it.
-"""
 
 import re
 from dataclasses import dataclass, field
 from typing import List, Dict, Optional
 
 
-# ---------------------------------------------------------------------------
+
 # Token categories recognized by the lexer
-# ---------------------------------------------------------------------------
+
 TOKEN_TYPES = [
     "KEYWORD",
     "IDENTIFIER",
@@ -31,7 +22,7 @@ TOKEN_TYPES = [
     "ERROR",
 ]
 
-# Reserved keywords of the C language (C89/C99 core set)
+# Reserved keywords of the C language C89/C99 core set
 C_KEYWORDS = {
     "auto", "break", "case", "char", "const", "continue", "default", "do",
     "double", "else", "enum", "extern", "float", "for", "goto", "if",
@@ -39,29 +30,6 @@ C_KEYWORDS = {
     "static", "struct", "switch", "typedef", "union", "unsigned", "void",
     "volatile", "while", "inline", "restrict", "_Bool", "_Complex",
     "_Imaginary",
-}
-
-# Reserved words that belong to OTHER languages (Python / Java / C++) and are
-# NOT valid C keywords. When the analyzer meets one of these as a bare word it
-# is almost certainly non-C source, so we report it as a lexical error instead
-# of silently accepting it as an ordinary identifier. Words that overlap with C
-# (if/else/for/while/return/break/continue/case ...) are intentionally excluded
-# so shared constructs are still accepted.
-NON_C_KEYWORDS = {
-    # --- Python-specific ---
-    "def", "elif", "lambda", "import", "from", "as", "class", "try",
-    "except", "finally", "raise", "with", "yield", "global", "nonlocal",
-    "pass", "del", "assert", "and", "or", "not", "is", "in", "None",
-    "True", "False", "async", "await", "print",
-    # --- Java-specific ---
-    "boolean", "byte", "transient", "extends", "implements", "package",
-    "final", "abstract", "instanceof", "interface", "synchronized",
-    "native", "super", "throws", "import",
-    # --- C++-specific ---
-    "public", "private", "protected", "namespace", "using", "template",
-    "typename", "virtual", "friend", "this", "throw", "catch", "operator",
-    "new", "delete", "nullptr", "explicit", "mutable", "bool", "true",
-    "false",
 }
 
 # Multi-character operators must be listed before their single-char prefixes
@@ -113,23 +81,7 @@ class SymbolEntry:
 
 
 class CLexicalAnalyzer:
-    """
-    A hand-rolled lexical analyzer for (a practical, teaching-oriented subset
-    of) the C programming language.
-
-    Design notes (for the project report):
-      - The analyzer scans the source left-to-right maintaining (line, column).
-      - At each position it applies the "maximal munch" rule: among all token
-        patterns that match at the current position, the longest match wins.
-        This is the same principle real lexers (lex/flex) use, implemented
-        here explicitly via ordered pattern attempts (multi-char operators
-        checked before single-char ones, etc.)
-      - Comments and preprocessor directives are tokenized but excluded from
-        the symbol table.
-      - Unrecognized characters or malformed literals produce ERROR tokens
-        with line/column and a descriptive message, then the scanner
-        recovers by skipping the offending character(s) and continuing.
-    """
+   
 
     def __init__(self, source: str):
         self.source = source
@@ -141,9 +93,9 @@ class CLexicalAnalyzer:
         self.col = 1
         self.length = len(source)
 
-    # ------------------------------------------------------------------
+    
     # Low-level character helpers
-    # ------------------------------------------------------------------
+    
     def _peek(self, offset: int = 0) -> str:
         idx = self.pos + offset
         return self.source[idx] if idx < self.length else ""
@@ -166,9 +118,9 @@ class CLexicalAnalyzer:
         self.errors.append(LexError(message, lexeme, line, col))
         self.tokens.append(Token("ERROR", lexeme, line, col))
 
-    # ------------------------------------------------------------------
+    
     # Symbol table management
-    # ------------------------------------------------------------------
+
     def _record_symbol(self, name: str, category: str, line: int,
                         data_type: Optional[str] = None):
         if name in self.symbol_table:
@@ -182,22 +134,23 @@ class CLexicalAnalyzer:
                 occurrences=1, data_type=data_type
             )
 
-    # ------------------------------------------------------------------
+    
     # Main driver
-    # ------------------------------------------------------------------
+    
     def tokenize(self):
-        last_type_keyword = None  # tracks a preceding type keyword e.g. 'int x'
-
+# tracks a preceding type keyword e.g. 'int x'
+        last_type_keyword = None  
+# main loop to check all source code
         while self.pos < self.length:
             ch = self._peek()
             start_line, start_col = self.line, self.col
 
-            # ---- whitespace ----
+            #  whitespace
             if ch in " \t\r\n":
                 self._advance()
                 continue
 
-            # ---- line comment ----
+            # line comment 
             if ch == "/" and self._peek(1) == "/":
                 start = self.pos
                 while self.pos < self.length and self._peek() != "\n":
@@ -206,7 +159,7 @@ class CLexicalAnalyzer:
                 self._add_token("COMMENT", lexeme, start_line, start_col)
                 continue
 
-            # ---- block comment ----
+            # block comment 
             if ch == "/" and self._peek(1) == "*":
                 start = self.pos
                 self._advance(2)
@@ -227,7 +180,7 @@ class CLexicalAnalyzer:
                     self._add_token("COMMENT", lexeme, start_line, start_col)
                 continue
 
-            # ---- preprocessor directive ----
+            # preprocessor directive 
             if ch == "#":
                 start = self.pos
                 while self.pos < self.length and self._peek() != "\n":
@@ -236,7 +189,7 @@ class CLexicalAnalyzer:
                 self._add_token("PREPROCESSOR", lexeme, start_line, start_col)
                 continue
 
-            # ---- string literal ----
+            # string literal
             if ch == '"':
                 start = self.pos
                 self._advance()
@@ -263,7 +216,7 @@ class CLexicalAnalyzer:
                     self._add_token("STRING_LITERAL", lexeme, start_line, start_col)
                 continue
 
-            # ---- char literal ----
+            # char literal
             if ch == "'":
                 start = self.pos
                 self._advance()
@@ -295,7 +248,7 @@ class CLexicalAnalyzer:
                     self._add_token("CHAR_CONSTANT", lexeme, start_line, start_col)
                 continue
 
-            # ---- numbers (int / float) ----
+            #  numbers int and float
             if ch.isdigit() or (ch == "." and self._peek(1).isdigit()):
                 start = self.pos
 
@@ -354,13 +307,6 @@ class CLexicalAnalyzer:
                         last_type_keyword = lexeme
                     else:
                         last_type_keyword = None
-                elif lexeme in NON_C_KEYWORDS:
-                    last_type_keyword = None
-                    self._add_error(
-                        f"'{lexeme}' is a reserved keyword in another language "
-                        f"and is not valid in C",
-                        lexeme, start_line, start_col
-                    )
                 else:
                     self._add_token("IDENTIFIER", lexeme, start_line, start_col)
                     self._record_symbol(
@@ -400,18 +346,17 @@ class CLexicalAnalyzer:
 
         return self.tokens, self.errors, self.symbol_table
 
-    # ------------------------------------------------------------------
-    # Convenience summary stats
-    # ------------------------------------------------------------------
+
+    # Convenience summary stats    counts how many times each type of token appears in the source code
+    
     def summary(self) -> Dict[str, int]:
         counts: Dict[str, int] = {t: 0 for t in TOKEN_TYPES}
         for tok in self.tokens:
             counts[tok.type] = counts.get(tok.type, 0) + 1
         return counts
 
-
+#helper function that runs the lexical analyzer and returns four things: tokens, errors, symbol table, and the lexer object
 def analyze_source(source: str):
-    """Convenience wrapper: run the analyzer and return (tokens, errors, symtab, lexer)."""
     lexer = CLexicalAnalyzer(source)
     tokens, errors, symtab = lexer.tokenize()
     return tokens, errors, symtab, lexer
